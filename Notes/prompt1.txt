@@ -1,0 +1,88 @@
+VIDEO 3 : 
+
+
+I want to build a online store based application to sell digital books format in pdf. i'm going to use MERN for that. Need to create a two app. one is user app for buyer and admin app for a single store seller.   
+
+1. Give me a idea for how can i do this.   what are all the features need to cover   
+2. what are all the packages going to use to build a scalable application   
+3. web search based on current year(2026) research it tech part and finalize the stable versions
+
+
+
+1. coupon flow is not needed remove it   
+2. Analytic feture from admin side is also not needed   
+3. We going to use razorpay insted of stripe   
+4. Need Google Oauth one tap login if it's a login page   
+5. I'm going to use cloudflare bucket for file uploads   
+6. Remove Zustand and tanstack from this. 
+7. Need Redux and RTK query insted of this.   
+8. for styling use Daisy UI for UI components   
+based on these suggestion. give me final vets
+
+
+Need to add testing tool based on current year best tools
+
+Need to create final srs document under docs folder based on our finalized features from the above conversation
+
+
+VIDEO  4:
+
+Need to create a document for milestones of
+the product development flow.   
+
+My suggestion is:   
+
+1. setup base for all apps with test suit setup   
+2. set CI pipeline for automated test in GitHub
+3. setup docker for deployment and CI/CD
+4. pipeline   configure cloud clusters VPS for deployment
+5. using docker   domain mapping and SSL configuration for this staging server   
+6. build feature step by step release it   
+
+I need a document for how we can build step by step. each is like a GitHub issue with
+detailed context test criteria.   
+
+Before creating a document let me know on how we can plan it as gist
+
+
+yes generate detailed document
+
+
+
+VIDEO 5 : Mock UI 
+
+
+https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+Plz install skill ui-ux-pro-max
+
+
+
+
+I need to create a entire mock flow using html, css and js alone under mock_ui folder.
+
+1. I've attached refernce UI as a image. I need in same theme
+2. I need a 100% exact UI flow based on SRS.md document.
+3. don't miss any single logic from that document. and do not create excess feature or UI or scanaio if its not in ⬇ SRS.md
+4. 100 % accurate result needed and use /ui-ux-pro-max for design standard
+5. it should 100% mobile responsive too
+
+
+
+@mock_ui
+
+This UI is good but need to fix alignment spacing and UX.
+Reasearch in web for our category. fix the UX flow. I need to bext experice and best UI. change it based on current design standea
+do not use /ui_ux_pro_max skill
+
+
+need a minimum height as device height . Need to fix the footer bottom gap.Need to ensure it in all pages.
+
+
+
+Mobile menu zindex need to fix.it's comming in back of the content.
+
+
+
+
+
+

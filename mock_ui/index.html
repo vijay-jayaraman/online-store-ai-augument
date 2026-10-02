@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page &amp; Pine · UI mock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem("pp_theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <style>
+      .hub {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 48px 20px 64px;
+      }
+      .hub-head {
+        text-align: center;
+        margin-bottom: 36px;
+      }
+      .hub-head .eyebrow {
+        font-size: 0.72rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .hub-head h1 {
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        margin: 8px 0 10px;
+      }
+      .hub-apps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 28px;
+      }
+      .hub-app {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .hub-app .icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius);
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .hub-app h2 {
+        margin: 4px 0 0;
+      }
+      .hub-app p {
+        margin: 0;
+        color: var(--text-muted);
+        flex: 1;
+      }
+      .hub .table td,
+      .hub .table th {
+        vertical-align: top;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="hub">
+      <header class="hub-head">
+        <span class="eyebrow">Clickable UI mock</span>
+        <h1>Page &amp; Pine</h1>
+        <p class="muted">Digital PDF bookstore: a buyer storefront and a seller admin. Built with plain HTML, CSS and JavaScript. All data is simulated in your browser.</p>
+      </header>
+
+      <div class="hub-apps">
+        <section class="card card-body hub-app">
+          <span class="icon-wrap" id="ic-store"></span>
+          <h2>Store</h2>
+          <p>Browse the catalog, read free samples, sign in with Google, check out with Razorpay, and download purchased books from the library.</p>
+          <a class="btn btn-primary" href="store/index.html">Open the store</a>
+        </section>
+        <section class="card card-body hub-app">
+          <span class="icon-wrap" id="ic-admin"></span>
+          <h2>Seller admin</h2>
+          <p>Manage books and files, categories, authors, orders and refunds, customers, reviews, settings, email templates and the audit log.</p>
+          <a class="btn btn-accent" href="admin/index.html">Open the admin</a>
+        </section>
+      </div>
+
+      <section class="card" style="margin-bottom:20px">
+        <div class="card-body" style="padding-bottom:0"><h2 class="card-title">Demo Google accounts</h2></div>
+        <div class="table-wrap">
+          <table class="table responsive">
+            <thead><tr><th>Account</th><th>App</th><th>What it shows</th></tr></thead>
+            <tbody>
+              <tr><td class="td-main">Priya Sharma<br /><span class="muted small">priya.sharma@gmail.com</span></td><td data-label="App">Store</td><td data-label="What it shows">Returning buyer with books in her library (one at the download limit, one archived), a cart, a wishlist, and failed and expired orders.</td></tr>
+              <tr><td class="td-main">Arjun Mehta<br /><span class="muted small">arjun.mehta@gmail.com</span></td><td data-label="App">Store</td><td data-label="What it shows">First-time sign-in: the account is created and a welcome email is queued.</td></tr>
+              <tr><td class="td-main">Rahul Verma<br /><span class="muted small">rahul.verma@gmail.com</span></td><td data-label="App">Store</td><td data-label="What it shows">Blocked account: sign-in is refused.</td></tr>
+              <tr><td class="td-main">Meera Nair<br /><span class="muted small">meera@pageandpine.in</span></td><td data-label="App">Admin</td><td data-label="What it shows">Store owner on the admin allowlist.</td></tr>
+              <tr><td class="td-main">Priya Sharma<br /><span class="muted small">priya.sharma@gmail.com</span></td><td data-label="App">Admin</td><td data-label="What it shows">Not on the allowlist: sees “Not authorized”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card card-body">
+        <h2 class="card-title">Testing tips</h2>
+        <ul style="margin:0 0 16px;padding-left:20px" class="stack">
+          <li>Razorpay Checkout runs in test mode: choose <strong>Success</strong> or <strong>Failure</strong> to simulate the payment. Webhooks arrive a moment later, including a duplicate delivery that is ignored.</li>
+          <li>Add <code class="mono">?simulate=error</code> to the page URL (before the <code class="mono">#</code>) to make data requests fail and see the error states, for example <code class="mono">store/index.html?simulate=error</code>.</li>
+          <li>The store and admin share the same simulated database, so open both from the same local server to see changes flow between them.</li>
+        </ul>
+        <button type="button" class="btn btn-danger-outline" id="reset-btn">Reset mock data</button>
+        <span class="muted small" id="reset-msg" role="status" style="margin-left:10px"></span>
+      </section>
+    </main>
+
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/ui.js"></script>
+    <script>
+      document.getElementById("ic-store").innerHTML = UI.icon("book-open");
+      document.getElementById("ic-admin").innerHTML = UI.icon("sliders");
+      document.getElementById("reset-btn").addEventListener("click", function () {
+        UI.confirmDialog({ title: "Reset mock data?", message: "All orders, carts, uploads and settings you changed will be replaced with the original demo data, and everyone will be signed out.", confirmText: "Reset", danger: true }).then(function (ok) {
+          if (!ok) return;
+          Mock.reset();
+          ["pp_guest_cart", "pp_onetap_dismissed", "pp_g_logged_out"].forEach(function (k) {
+            localStorage.removeItem(k);
+            sessionStorage.removeItem(k);
+          });
+          document.getElementById("reset-msg").textContent = "Demo data has been reset.";
+        });
+      });
+    </script>
+  </body>
+</html>
