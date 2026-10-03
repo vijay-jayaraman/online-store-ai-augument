@@ -82,7 +82,22 @@ need a minimum height as device height . Need to fix the footer bottom gap.Need 
 Mobile menu zindex need to fix.it's comming in back of the content.
 
 
+VIDEO 7 :
+
+login to GitHub
+
+Need to initialize git repository for this project and add gitignore file
+
+
+initial commit
 
 
 
+@docs/MILESTONES.md
+I've already created all milestones of version 1.0. Now i need list of issues can create under each milestones. let me know how can we do that first. before creating any document
 
+create all issues as docs/ISSUES.md
+
+
+
+i need to create all issues and milestones inside GitHub repository using gh
