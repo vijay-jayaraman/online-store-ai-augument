@@ -1,0 +1,37 @@
+{
+  "name": "bookstore",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Digital Book Store — PDF e-book platform (MERN monorepo)",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "e2e"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.13.0",
+  "scripts": {
+    "dev": "node scripts/run-workspaces.js dev --parallel",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node scripts/run-workspaces.js test",
+    "test:coverage": "node scripts/run-workspaces.js test:coverage",
+    "test:e2e": "node scripts/run-workspaces.js test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.5",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.4.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9"
+  }
+}
