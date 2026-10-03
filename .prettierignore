@@ -1,0 +1,12 @@
+# Reference material, not source code
+docs/
+mock_ui/
+Notes/
+
+# Generated files
+package-lock.json
+dist/
+build/
+coverage/
+playwright-report/
+test-results/

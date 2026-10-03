@@ -131,19 +131,21 @@ Deployment files live in the `deploy/` folder (see SRS Section 7.4):
 **Context:** Every later issue builds on this repository layout. Setting up workspaces, linting, and formatting now keeps all apps consistent.
 
 **Tasks**
-- [ ] Create the root `package.json` with `"workspaces": ["apps/*", "packages/*", "e2e"]` and `"engines": { "node": ">=24" }`.
-- [ ] Add `.nvmrc` (Node 24), `.gitignore` (including `node_modules`, `dist`, `coverage`, `.env*` except `.env.example`), and `.editorconfig`.
-- [ ] Add a flat `eslint.config.js` (React rules for the apps, Node rules for the API) and `.prettierrc`.
-- [ ] Add root scripts: `dev` (runs all apps in parallel), `lint`, `format`, `format:check`, `test`, `test:coverage`, `test:e2e`.
-- [ ] Create the root `.env.example` and `README.md` with setup instructions.
+- [ ] Create the root `package.json` with `"private": true`, `"type": "module"`, `"workspaces": ["apps/*", "packages/*", "e2e"]`, `"engines": { "node": ">=24" }`, and `"packageManager": "npm@11.x"`.
+- [ ] Add `.nvmrc` (Node 24), `.editorconfig`, and `.gitattributes` (LF line endings). Confirm `.gitignore` covers `node_modules`, `dist`, `coverage`, and `.env*` except `.env.example`.
+- [ ] Add a flat `eslint.config.js` on ESLint 10 (`@eslint/js`, `globals`): `eslint-plugin-react-hooks` and `eslint-plugin-react-refresh` with browser globals for the store and admin apps, `eslint-plugin-n` with Node globals for the API, shared package, `e2e`, and scripts, and `eslint-config-prettier` last. Do not use `eslint-plugin-react` or `eslint-plugin-jsx-a11y`: they do not support ESLint 10.
+- [ ] Add `.prettierrc` and `.prettierignore`. Exclude the reference folders `docs/`, `mock_ui/`, and `Notes/` from both ESLint and Prettier.
+- [ ] Add root scripts: `dev`, `lint`, `lint:fix`, `format`, `format:check`, `test`, `test:coverage`, `test:e2e`. `dev` runs all apps in parallel with `concurrently` (npm runs workspace scripts one at a time). The `dev` and test scripts run in every workspace that defines the script and succeed when none does yet (`npm run --workspaces` fails with "No workspaces found!" before the apps exist).
+- [ ] Create the root `.env.example` and `README.md` with setup instructions, and `.vscode/extensions.json` recommending the ESLint, Prettier, and EditorConfig extensions.
 
 **Acceptance criteria**
-- Given a fresh clone, when I run `npm install`, then all workspaces install without errors.
+- Given a fresh clone, when I run `npm ci`, then all workspaces install without errors or peer dependency conflicts.
 - When I run `npm run lint` and `npm run format:check`, then both pass on the clean repository.
+- When I run `npm test` or `npm run test:e2e` before any workspace exists, then it exits with code 0.
 - `.env` files are ignored by git and `.env.example` is committed.
 
 **Test criteria**
-- `npm run lint` and `npm run format:check` exit with code 0.
+- `npm run lint`, `npm run format:check`, and `npm test` exit with code 0.
 
 ---
 
