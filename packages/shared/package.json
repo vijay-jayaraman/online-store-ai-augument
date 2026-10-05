@@ -1,0 +1,21 @@
+{
+  "name": "@bookstore/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Zod schemas and constants shared by the API, store, and admin apps",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.2",
+    "vitest": "^5.0.2"
+  }
+}
