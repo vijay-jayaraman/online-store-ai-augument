@@ -43,7 +43,7 @@ npm test -w apps/api -- tests/unit/pricing.test.js -t "applies tax"   # one test
   - API, `packages/`, `e2e/`, `scripts/` and root config files: `eslint-plugin-n`, Node globals.
   - `eslint-config-prettier` stays last.
 - Do not add `eslint-plugin-react` or `eslint-plugin-jsx-a11y`. Their releases do not support ESLint 10 and break `npm ci` with a peer dependency conflict.
-- `docs/`, `mock_ui/`, and `Notes/` are reference material, excluded from both ESLint and Prettier.
+- `docs/` and `mock_ui/` are reference material; `docs/`, `mock_ui/`, and `Notes/` are excluded from both ESLint and Prettier.
 - Prettier: single quotes, semicolons, trailing commas, print width 100. Line endings are LF (`.gitattributes`).
 - Everything is ES modules (`"type": "module"`). The codebase is JavaScript (`.js`/`.jsx`), not TypeScript.
 
@@ -106,4 +106,5 @@ npm test -w apps/api -- tests/unit/pricing.test.js -t "applies tax"   # one test
 - When a milestone is complete, tag `main` as `v0.<milestone+1>.0`.
 - New environment variables go in `.env.example` (root and per app). Real `.env` files are git-ignored.
 - `mock_ui/` is a static HTML/CSS/JS UI mockup ("Page & Pine") to use as the visual reference for the store and admin apps.
+- Do not read, search, or edit any file in `Notes/`. It holds the user's personal notes, not project material. Exclude it from Grep/Glob searches as well.
 - The development machine is Windows, with PowerShell as the default shell.
