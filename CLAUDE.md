@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. Only M0-01 (repository root tooling) is done. `apps/api`, `apps/store`, `apps/admin`, `packages/shared`, and `e2e` do not exist yet; issues M0-02 to M0-08 create them.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), and M0-03 (`apps/api` skeleton) are done. `apps/store`, `apps/admin`, and `e2e` do not exist yet; issues M0-05 to M0-08 create them. API tests (Vitest, Supertest) arrive in M0-04, so `apps/api` has no `test` script yet.
+
+The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
 **Read first:**
 
