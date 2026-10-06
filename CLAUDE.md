@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), and M0-05 (`apps/store` skeleton) are done. `apps/admin` and `e2e` do not exist yet; issues M0-06 to M0-08 create them. Store component tests arrive in M0-07, so `apps/store` has no `test` script yet.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), and M0-06 (`apps/admin` skeleton) are done. `e2e` does not exist yet; M0-08 creates it. Component tests for both apps arrive in M0-07, so `apps/store` and `apps/admin` have no `test` script yet.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -13,6 +13,11 @@ The store app (`npm run dev -w apps/store`, http://localhost:5173) calls the API
 - **App shell:** `src/app/` holds `makeStore()`, the `routes` array (shared by the browser router and future memory-router tests), and the listener middleware.
 - **API calls:** RTK Query endpoints are added to `src/api/baseApi.js` with `injectEndpoints`.
 - **Themes:** daisyUI themes `light` and `dark` are defined in `src/styles/index.css` from the `mock_ui` tokens. The theme lives in `features/ui/uiSlice.js`; a listener applies `data-theme` and saves it to `localStorage` (`bookstore.theme`). An inline script in `index.html` applies the saved theme before render.
+
+The admin app (`npm run dev -w apps/admin`, http://localhost:5174) has the same foundation, copied from the store, not shared: `packages/shared` holds only Zod schemas and constants. It also uses `VITE_STORE_URL` for the "View store" link.
+
+- **Navigation:** `src/app/nav.js` (`NAV_GROUPS`) is the single list of admin sections. The sidebar and the routes in `src/app/routes.jsx` are both built from it, so add a section there. `/` redirects to `/books`.
+- **Layout:** `AdminLayout` uses the daisyUI `drawer`, always open from `lg`; below that the menu button opens it. The sidebar comes before the content in the DOM for keyboard order. Sidebar colours are the `--sidebar-*` variables in `src/styles/index.css`.
 
 **Read first:**
 
