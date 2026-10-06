@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), and M0-03 (`apps/api` skeleton) are done. `apps/store`, `apps/admin`, and `e2e` do not exist yet; issues M0-05 to M0-08 create them. API tests (Vitest, Supertest) arrive in M0-04, so `apps/api` has no `test` script yet.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), and M0-04 (API tests) are done. `apps/store`, `apps/admin`, and `e2e` do not exist yet; issues M0-05 to M0-08 create them.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -29,6 +29,7 @@ npm run test:e2e           # "test:e2e" in every workspace that defines it
 
 npm run dev -w apps/api    # one workspace
 npm test -w apps/api -- tests/unit/pricing.test.js -t "applies tax"   # one test file or test name (Vitest)
+npm run test:unit -w apps/api          # one Vitest project (also test:integration)
 ```
 
 `dev`, `test`, `test:coverage`, and `test:e2e` go through `scripts/run-workspaces.js`:
@@ -92,6 +93,13 @@ npm test -w apps/api -- tests/unit/pricing.test.js -t "applies tax"   # one test
 ## Testing
 
 - Vitest everywhere; Supertest + `mongodb-memory-server` for API integration tests.
+- API tests (`apps/api/vitest.config.js`) have two projects:
+  - `unit` (`tests/unit/`).
+  - `integration` (`tests/integration/`). One in-memory MongoDB is started in global setup. Each worker uses its own database, and collections are cleared after every test.
+  - The API tests need no running services. The MongoDB 8 binary version is pinned in `apps/api/package.json` and downloaded once to `node_modules/.cache`.
+  - Redis is not started in tests; mock `src/config/redis.js` with `vi.mock` where a test needs it.
+  - Build the app with `api()` from `tests/helpers/app.js` (Supertest; no port opened).
+  - Test env values are set in `test.env` of the Vitest config, with `LOG_LEVEL=silent`.
 - Testing Library + jsdom + MSW for component tests; Playwright in `e2e/` with `STORE_URL`, `ADMIN_URL`, and `API_URL`.
 - Each issue's **Test criteria** in MILESTONES.md lists the tests that must exist before it is closed.
 - Required test cases are TC-01 to TC-10 in SRS §8.3.
