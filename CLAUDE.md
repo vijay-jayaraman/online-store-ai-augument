@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), and M0-06 (`apps/admin` skeleton) are done. `e2e` does not exist yet; M0-08 creates it. Component tests for both apps arrive in M0-07, so `apps/store` and `apps/admin` have no `test` script yet.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), and M0-07 (frontend tests) are done. `e2e` does not exist yet; M0-08 creates it.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -112,6 +112,12 @@ npm run test:unit -w apps/api          # one Vitest project (also test:integrati
   - Build the app with `api()` from `tests/helpers/app.js` (Supertest; no port opened).
   - Test env values are set in `test.env` of the Vitest config, with `LOG_LEVEL=silent`.
 - Testing Library + jsdom + MSW for component tests; Playwright in `e2e/` with `STORE_URL`, `ADMIN_URL`, and `API_URL`.
+- Store and admin component tests (`apps/{store,admin}/vitest.config.js`, which merges `vite.config.js`) share the same layout:
+  - `tests/setup.js` loads `@testing-library/jest-dom/vitest` and starts the MSW server with `onUnhandledFrame: 'error'` (MSW 3; v2 called it `onUnhandledRequest`), so any request without a handler fails. After each test it runs `cleanup()`, resets handlers, clears `localStorage`, and removes `data-theme`. It also stubs `window.scrollTo` for `<ScrollRestoration>`.
+  - `tests/mocks/handlers.js` holds the default happy-path handlers, built with `apiUrl(path)` from `API_URL`. Add one per new endpoint, and override per test with `server.use(...)` (`http`/`HttpResponse` come from `msw/http`).
+  - `tests/utils/renderWithProviders.jsx`: `renderWithProviders(ui, { route, preloadedState })` renders one component; `renderApp(route)` renders the real `routes`. Both use a fresh `makeStore()` and a memory router, and return `{ store, router, user, ... }`.
+  - Vitest globals are off: import `describe`/`it`/`expect` from `vitest`.
+  - `jsdom` is on 29.x because 30.x needs Node ≥ 24.15.
 - Each issue's **Test criteria** in MILESTONES.md lists the tests that must exist before it is closed.
 - Required test cases are TC-01 to TC-10 in SRS §8.3.
 
