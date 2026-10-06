@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), and M0-04 (API tests) are done. `apps/store`, `apps/admin`, and `e2e` do not exist yet; issues M0-05 to M0-08 create them.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), and M0-05 (`apps/store` skeleton) are done. `apps/admin` and `e2e` do not exist yet; issues M0-06 to M0-08 create them. Store component tests arrive in M0-07, so `apps/store` has no `test` script yet.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
+
+The store app (`npm run dev -w apps/store`, http://localhost:5173) calls the API at `VITE_API_URL` (default `http://localhost:4000/api/v1`; override in `apps/store/.env`).
+
+- **App shell:** `src/app/` holds `makeStore()`, the `routes` array (shared by the browser router and future memory-router tests), and the listener middleware.
+- **API calls:** RTK Query endpoints are added to `src/api/baseApi.js` with `injectEndpoints`.
+- **Themes:** daisyUI themes `light` and `dark` are defined in `src/styles/index.css` from the `mock_ui` tokens. The theme lives in `features/ui/uiSlice.js`; a listener applies `data-theme` and saves it to `localStorage` (`bookstore.theme`). An inline script in `index.html` applies the saved theme before render.
 
 **Read first:**
 
