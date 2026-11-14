@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), and M0-07 (frontend tests) are done. `e2e` does not exist yet; M0-08 creates it.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete. M1 (CI pipeline) is next.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -41,6 +41,8 @@ npm run test:e2e           # "test:e2e" in every workspace that defines it
 npm run dev -w apps/api    # one workspace
 npm test -w apps/api -- tests/unit/pricing.test.js -t "applies tax"   # one test file or test name (Vitest)
 npm run test:unit -w apps/api          # one Vitest project (also test:integration)
+npm run install:browsers -w e2e        # one-time Playwright browser download (Chromium, Firefox, WebKit)
+npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwright project or spec
 ```
 
 `dev`, `test`, `test:coverage`, and `test:e2e` go through `scripts/run-workspaces.js`:
@@ -118,6 +120,12 @@ npm run test:unit -w apps/api          # one Vitest project (also test:integrati
   - `tests/utils/renderWithProviders.jsx`: `renderWithProviders(ui, { route, preloadedState })` renders one component; `renderApp(route)` renders the real `routes`. Both use a fresh `makeStore()` and a memory router, and return `{ store, router, user, ... }`.
   - Vitest globals are off: import `describe`/`it`/`expect` from `vitest`.
   - `jsdom` is on 29.x because 30.x needs Node ≥ 24.15.
+- Playwright e2e tests (`e2e/playwright.config.js`, specs in `e2e/tests/`):
+  - Projects: `chromium`, `firefox`, `webkit`, and `mobile` (Pixel 7). Every spec runs in all four.
+  - URLs come from `e2e/support/urls.js` (`STORE_URL`, `ADMIN_URL`, `API_URL`, default localhost; optional `e2e/.env` via `process.loadEnvFile`, hence `engines.node >=24.10`). Specs use these absolute URLs, not a `baseURL`.
+  - `webServer` starts the store and admin dev servers only for localhost URLs (reusing running ones outside CI). With staging URLs nothing starts locally. The API is not started; tests that need it will need MongoDB and Redis too.
+  - On mobile the admin sidebar is a drawer: click "Open navigation" before asserting on it.
+  - `e2e` defines `test:e2e`, not `test`, so the root `npm test` never launches browsers.
 - Each issue's **Test criteria** in MILESTONES.md lists the tests that must exist before it is closed.
 - Required test cases are TC-01 to TC-10 in SRS §8.3.
 
