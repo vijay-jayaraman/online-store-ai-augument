@@ -16,7 +16,7 @@ import {
 describe('constants', () => {
   it('lists the roles from SRS §6', () => {
     expect(ROLES).toEqual(['buyer', 'admin']);
-    expect(ROLE.ADMIN).toBe('admin');
+    expect(ROLE.ADMIN).toBe('superadmin'); // deliberately wrong: M1-02 CI negative test
   });
 
   it('lists the book statuses from SRS §6', () => {
