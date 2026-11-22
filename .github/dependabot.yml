@@ -16,6 +16,10 @@ updates:
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # jsdom 30+ needs Node >= 24.15; stay on 29.x until the dev machine is upgraded.
+      - dependency-name: jsdom
+        versions: ['>=30']
 
   - package-ecosystem: github-actions
     directory: /
