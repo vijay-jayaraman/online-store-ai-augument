@@ -1,0 +1,41 @@
+# Weekly dependency update pull requests (M1-03). Each one runs the full CI.
+version: 2
+
+updates:
+  # The root lockfile covers every workspace.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+    # Minor and patch updates in one pull request; each major update gets its own.
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore(ci)
+    groups:
+      actions:
+        patterns: ['*']
+
+  # apps/api/Dockerfile (M2-01) and deploy/web.Dockerfile (M2-02). Until they exist, Dependabot
+  # reports "no Dockerfile found" for this entry on its own page; pull request checks are unaffected.
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      - /deploy
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore(docker)

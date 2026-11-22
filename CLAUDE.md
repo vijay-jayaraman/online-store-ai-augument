@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow) and M1-02 (tests with coverage thresholds in CI) are done.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow), M1-02 (tests with coverage thresholds in CI), and M1-03 (dependency audit and Dependabot) are done.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -54,12 +54,18 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 
 ## CI
 
-- GitHub Actions workflow `.github/workflows/ci.yml` (`CI`) runs on every pull request and on pushes to `main`.
+- GitHub Actions workflow `.github/workflows/ci.yml` (`CI`) runs on every pull request, on pushes to `main`, and weekly on `main` (Monday 03:00 UTC, to catch newly published advisories).
 - Job `lint`: `npm ci`, `npm run lint`, `npm run format:check` on Ubuntu with Node from `.nvmrc`. Reproduce locally with the same three commands.
 - Job `test`: runs `npm run test:coverage` once per workspace (shared, api, store, admin), each as its own step that runs even if an earlier one failed. It then writes a coverage table to the job summary (`scripts/coverage-summary.js`) and uploads the HTML reports as the `coverage` artifact (14 days; `gh run download <run-id> -n coverage`).
 - Coverage thresholds (lines) live in each workspace's `vitest.config.js`: 80% for `apps/api` and `packages/shared`, 70% for `apps/store` and `apps/admin`. They also apply to local `test:coverage`. Never lower them to get green; add tests. Keep `WORKSPACES` in `scripts/coverage-summary.js` in sync.
 - Entry points are excluded from coverage (`apps/api/src/server.js`, the apps' `src/main.jsx`); exclude `worker.js` the same way when it exists.
-- Keep job names stable: branch protection (M1-05) requires them by name. Later M1 issues add audit and e2e jobs to the same file.
+- Job `audit`: `npm audit --audit-level=high` (SEC-11). It reads only `package-lock.json`, so it skips `npm ci`. High and critical advisories fail it; lower ones are only listed. Reproduce locally with the same command; fix with `npm audit fix` (lockfile) in its own `fix:` PR.
+- Dependabot (`.github/dependabot.yml`) opens update PRs every Monday:
+  - `npm` (the root lockfile covers all workspaces): minor and patch updates grouped into one PR, each major as its own PR;
+  - `github-actions`: all grouped;
+  - `docker`: `/apps/api` and `/deploy`. It reports "no Dockerfile found" until M2-01/M2-02 add them.
+  - Its PRs are titled `chore(deps): …` (not issue IDs) and run the full CI. Dependabot alerts and security updates are enabled in the repo settings.
+- Keep job names stable: branch protection (M1-05) requires them by name. M1-04 adds the `e2e` job to the same file.
 - A newer push to a PR cancels its older run; runs on `main` always finish. The workflow token is read-only (`contents: read`).
 - MongoDB binary: `lint` sets `MONGOMS_DISABLE_POSTINSTALL=1` (no download). `test` sets `MONGOMS_DOWNLOAD_DIR=$HOME/.cache/mongodb-binaries` (outside `node_modules`, which `npm ci` wipes) and caches it with `actions/cache`, keyed by the version pinned in `apps/api/package.json`.
 

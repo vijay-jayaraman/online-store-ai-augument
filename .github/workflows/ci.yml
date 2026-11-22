@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Weekly run on main: new advisories are published without any code change (M1-03).
+  schedule:
+    - cron: '0 3 * * 1'
 
 # A newer push to the same PR cancels its older run; runs on main always finish.
 concurrency:
@@ -37,6 +40,24 @@ jobs:
 
       - name: Prettier
         run: npm run format:check
+
+  # Known vulnerabilities in dependencies (SEC-11). Branch protection (M1-05) requires this job by
+  # name; keep it `audit`.
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Reads package-lock.json only (all workspaces), so no `npm ci` is needed. High and critical
+      # advisories fail the job; lower severities are listed but do not.
+      - name: npm audit
+        run: npm audit --audit-level=high
 
   # Unit, component, and integration tests with coverage thresholds (set in each vitest.config.js).
   # Branch protection (M1-05) requires this job by name; keep it `test`.
