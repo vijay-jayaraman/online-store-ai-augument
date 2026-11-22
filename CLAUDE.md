@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete. M1 (CI pipeline) is next.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow) is done.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -51,6 +51,14 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 - It exits 0 when no workspace defines it.
 - So a new workspace must define `dev` / `test` / `test:coverage` (and `e2e` must define `test:e2e`), or the root script silently skips it.
 - It exists because `npm run --workspaces --if-present` fails with "No workspaces found!" when there are none, and because npm runs workspace scripts one at a time.
+
+## CI
+
+- GitHub Actions workflow `.github/workflows/ci.yml` (`CI`) runs on every pull request and on pushes to `main`.
+- Job `lint`: `npm ci`, `npm run lint`, `npm run format:check` on Ubuntu with Node from `.nvmrc`. Reproduce locally with the same three commands.
+- Keep job names stable: branch protection (M1-05) requires them by name. Later M1 issues add `test`, audit, and e2e jobs to the same file.
+- A newer push to a PR cancels its older run; runs on `main` always finish. The workflow token is read-only (`contents: read`).
+- `MONGOMS_DISABLE_POSTINSTALL=1` skips the MongoDB binary download in jobs that don't run the API integration tests.
 
 ## Lint and format
 
