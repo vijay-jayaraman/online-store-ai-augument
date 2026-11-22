@@ -37,3 +37,65 @@ jobs:
 
       - name: Prettier
         run: npm run format:check
+
+  # Unit, component, and integration tests with coverage thresholds (set in each vitest.config.js).
+  # Branch protection (M1-05) requires this job by name; keep it `test`.
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # The API integration tests use mongodb-memory-server. Keep its binary outside node_modules
+      # (which `npm ci` wipes) so it can be cached, keyed by the version pinned in apps/api.
+      - name: Locate MongoDB binary cache
+        id: mongodb
+        run: |
+          echo "MONGOMS_DOWNLOAD_DIR=$HOME/.cache/mongodb-binaries" >> "$GITHUB_ENV"
+          echo "version=$(node -p "require('./apps/api/package.json').config.mongodbMemoryServer.version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-${{ runner.os }}-${{ steps.mongodb.outputs.version }}
+
+      # Downloads the MongoDB binary in postinstall only on a cache miss.
+      - run: npm ci
+
+      # One step per workspace; `!cancelled()` runs them all even if an earlier one fails.
+      - name: packages/shared
+        if: ${{ !cancelled() }}
+        run: npm run test:coverage -w packages/shared
+
+      - name: apps/api
+        if: ${{ !cancelled() }}
+        run: npm run test:coverage -w apps/api
+
+      - name: apps/store
+        if: ${{ !cancelled() }}
+        run: npm run test:coverage -w apps/store
+
+      - name: apps/admin
+        if: ${{ !cancelled() }}
+        run: npm run test:coverage -w apps/admin
+
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        run: node scripts/coverage-summary.js >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: |
+            packages/shared/coverage/
+            apps/*/coverage/
+          if-no-files-found: warn
+          retention-days: 14

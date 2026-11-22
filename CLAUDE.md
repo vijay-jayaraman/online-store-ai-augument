@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow) is done.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow) and M1-02 (tests with coverage thresholds in CI) are done.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -56,9 +56,12 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 
 - GitHub Actions workflow `.github/workflows/ci.yml` (`CI`) runs on every pull request and on pushes to `main`.
 - Job `lint`: `npm ci`, `npm run lint`, `npm run format:check` on Ubuntu with Node from `.nvmrc`. Reproduce locally with the same three commands.
-- Keep job names stable: branch protection (M1-05) requires them by name. Later M1 issues add `test`, audit, and e2e jobs to the same file.
+- Job `test`: runs `npm run test:coverage` once per workspace (shared, api, store, admin), each as its own step that runs even if an earlier one failed. It then writes a coverage table to the job summary (`scripts/coverage-summary.js`) and uploads the HTML reports as the `coverage` artifact (14 days; `gh run download <run-id> -n coverage`).
+- Coverage thresholds (lines) live in each workspace's `vitest.config.js`: 80% for `apps/api` and `packages/shared`, 70% for `apps/store` and `apps/admin`. They also apply to local `test:coverage`. Never lower them to get green; add tests. Keep `WORKSPACES` in `scripts/coverage-summary.js` in sync.
+- Entry points are excluded from coverage (`apps/api/src/server.js`, the apps' `src/main.jsx`); exclude `worker.js` the same way when it exists.
+- Keep job names stable: branch protection (M1-05) requires them by name. Later M1 issues add audit and e2e jobs to the same file.
 - A newer push to a PR cancels its older run; runs on `main` always finish. The workflow token is read-only (`contents: read`).
-- `MONGOMS_DISABLE_POSTINSTALL=1` skips the MongoDB binary download in jobs that don't run the API integration tests.
+- MongoDB binary: `lint` sets `MONGOMS_DISABLE_POSTINSTALL=1` (no download). `test` sets `MONGOMS_DOWNLOAD_DIR=$HOME/.cache/mongodb-binaries` (outside `node_modules`, which `npm ci` wipes) and caches it with `actions/cache`, keyed by the version pinned in `apps/api/package.json`.
 
 ## Lint and format
 
@@ -119,6 +122,7 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
   - `integration` (`tests/integration/`). One in-memory MongoDB is started in global setup. Each worker uses its own database, and collections are cleared after every test.
   - The API tests need no running services. The MongoDB 8 binary version is pinned in `apps/api/package.json` and downloaded once to `node_modules/.cache`.
   - Redis is not started in tests; mock `src/config/redis.js` with `vi.mock` where a test needs it.
+  - Connection code is unit-tested against fakes: `tests/unit/redis.test.js` mocks `ioredis` with an `EventEmitter`-based client; `tests/unit/db.test.js` mocks `mongoose` and `node:timers/promises` so retry backoff runs instantly. Both mock `src/config/logger.js` with spies (`vi.hoisted`).
   - Build the app with `api()` from `tests/helpers/app.js` (Supertest; no port opened).
   - Test env values are set in `test.env` of the Vitest config, with `LOG_LEVEL=silent`.
 - Testing Library + jsdom + MSW for component tests; Playwright in `e2e/` with `STORE_URL`, `ADMIN_URL`, and `API_URL`.
