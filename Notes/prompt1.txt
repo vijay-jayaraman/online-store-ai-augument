@@ -101,3 +101,57 @@ create all issues as docs/ISSUES.md
 
 
 i need to create all issues and milestones inside GitHub repository using gh
+
+
+VIDEO 8 : 
+
+get #1 issue from github using gh and explain what it covers
+
+
+create new branch for this issue
+
+
+is this issue have correctly created. need to check with web as well. make sure with latest versions of packages, structure. first let me know what are all going to create in this issue
+
+
+Change to PLAN Mode in Claude and then the below prompt.
+
+Need to implement this issue, so create a detailed plan. Now i am in plan mode.
+
+Need to check this current chnges exactly compatible for continous issues in this milestone?
+
+
+get issue #2, what it is and what are all going to build in that issue
+
+Create a branch for issue #2
+
+Change to PLAN Mode and then,
+
+Create a detailed implementation plan for issue #2
+
+If we accidenally cloe the agent working tab, then reopen it and just say "continue" it will proceed from where it left.
+
+
+get issue #3, what it is and what are all going to build in that issue
+
+
+create a branch for this issue.
+
+
+Change to PLAN Mod and then,
+Need to implement this issue . create perfect 100% working code for this issue. create a PLAN First.
+
+
+get issue #4, what it is and what are all going to build in that issue
+plz do not make any code changes yet.
+
+create a branch for this issue.
+
+
+Change to PLAN Mod and then,
+Need to implement this issue . create perfect 100% working code for this issue. create a PLAN First.
+
+
+
+
+get that #8 issue and explain what it have

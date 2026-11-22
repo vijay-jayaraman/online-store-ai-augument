@@ -35,6 +35,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.js'],
+      // The process entry point (listen, signals, exit) is checked by running the server, not by
+      // unit tests; tests build the app with createApp(). Exclude worker.js the same way later.
+      exclude: ['src/server.js'],
+      reporter: ['text', 'html', 'json-summary'],
+      // CI fails below this (M1-02). Add tests rather than lowering it.
+      thresholds: { lines: 80 },
     },
   },
 });
