@@ -20,6 +20,13 @@ updates:
       # jsdom 30+ needs Node >= 24.15; stay on 29.x until the dev machine is upgraded.
       - dependency-name: jsdom
         versions: ['>=30']
+      # Major lines pinned in SRS §7. Adopt a new major deliberately: update the SRS first.
+      - dependency-name: ioredis
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-router
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@testing-library/jest-dom'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
