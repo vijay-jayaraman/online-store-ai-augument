@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow), M1-02 (tests with coverage thresholds in CI), M1-03 (dependency audit and Dependabot), and M1-04 (Playwright e2e in CI) are done.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow), M1-02 (tests with coverage thresholds in CI), M1-03 (dependency audit and Dependabot), M1-04 (Playwright e2e in CI), and M1-05 (branch protection and templates) are done.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -67,7 +67,7 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
   - Its PRs are titled `chore(deps): …` (not issue IDs) and run the full CI. Dependabot alerts and security updates are enabled in the repo settings.
   - If a group PR fails with "Cannot find package 'vitest'" (a copy nested in each workspace instead of the root), run `npm dedupe` on its branch and push the lockfile.
 - Job `e2e` (`needs: [lint, test]`, SRS §8.4): runs `npm run test:e2e` with MongoDB 8 and Redis 8 as service containers. Playwright browsers are cached by Playwright version (`~/.cache/ms-playwright`); on a hit only `playwright install-deps` runs. On failure it uploads the `playwright-report` artifact (HTML report and `test-results/` traces, 14 days); open a trace with `npx playwright show-trace <trace.zip>`. It tests the dev servers; testing the production build comes with the Docker images (M2).
-- Keep job names stable: branch protection (M1-05) requires `lint`, `test`, `audit`, and `e2e` by name.
+- Keep job names stable: the `main` ruleset (see Workflow) requires `lint`, `test`, `audit`, and `e2e` by name. Renaming or adding a required job means updating `.github/rulesets/main.json` too.
 - A newer push to a PR cancels its older run; runs on `main` always finish. The workflow token is read-only (`contents: read`).
 - MongoDB binary: `lint` sets `MONGOMS_DISABLE_POSTINSTALL=1` (no download). `test` sets `MONGOMS_DOWNLOAD_DIR=$HOME/.cache/mongodb-binaries` (outside `node_modules`, which `npm ci` wipes) and caches it with `actions/cache`, keyed by the version pinned in `apps/api/package.json`.
 
@@ -156,8 +156,16 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 - One issue per branch and pull request.
   - Branch names: `feat/M5-02-google-sign-in`, `fix/...`, `chore/...`.
   - The pull request title starts with the issue ID, e.g. `M0-01 · ...`.
-  - Squash merge into `main`.
+  - Squash merge into `main` (the only merge method enabled); merged branches are deleted automatically.
   - Create the branch with `gh issue develop <n> --name <branch> --checkout` so it is linked to the issue.
+  - New issues and PRs start from `.github/ISSUE_TEMPLATE/feature.md` and `.github/pull_request_template.md` (the Definition of Done checklist).
+- `main` is protected by the repository ruleset in `.github/rulesets/main.json` (M1-05):
+  - A pull request is required (0 approvals: the only collaborator can't approve their own PR, so "reviewed" means the author's own review).
+  - `lint`, `test`, `audit`, and `e2e` must pass, reported by GitHub Actions (`integration_id` 15368), on a branch that is up to date with `main`.
+  - No force-push or deletion of `main`, and no bypass, admins included. If CI itself is broken, the only way round is editing the ruleset.
+  - When a PR falls behind `main`, run `gh pr update-branch <n>`. `gh pr merge <n> --squash --auto` merges once the checks pass.
+  - A skipped `e2e` (because `lint` or `test` failed) counts as passing, but the failed check still blocks the merge.
+  - The file is the source of truth. After editing it, apply it with `gh api -X PUT repos/vijay-jayaraman/online-store-ai-augument/rulesets/<id> --input .github/rulesets/main.json` (list ids with `gh api repos/vijay-jayaraman/online-store-ai-augument/rulesets`).
 - Commits follow Conventional Commits (`feat:`, `fix:`, `test:`, `chore:`, `docs:`).
 - If an issue's scope changes, edit `docs/MILESTONES.md` first, then `docs/ISSUES.md` and the GitHub issue body.
 - When a milestone is complete, tag `main` as `v0.<milestone+1>.0`.
