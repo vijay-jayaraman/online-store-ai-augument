@@ -120,3 +120,79 @@ jobs:
             apps/*/coverage/
           if-no-files-found: warn
           retention-days: 14
+
+  # Playwright end-to-end tests, after the faster checks pass (SRS 8.4). Playwright starts the store
+  # and admin dev servers and the API; the API uses the MongoDB and Redis service containers.
+  # Branch protection (M1-05) requires this job by name; keep it `e2e`.
+  e2e:
+    name: e2e
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # MongoDB comes from the service container; the memory-server binary is not needed.
+      MONGOMS_DISABLE_POSTINSTALL: '1'
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Browsers are cached by Playwright version; their OS libraries are not, so a cache hit
+      # still installs those.
+      - name: Locate Playwright browser cache
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install browsers
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Install browser system dependencies
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      - name: Playwright
+        run: npm run test:e2e
+
+      # Failed tests are retried with a trace (trace: 'on-first-retry'); open one with
+      # `npx playwright show-trace <trace.zip>`.
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          if-no-files-found: warn
+          retention-days: 14
