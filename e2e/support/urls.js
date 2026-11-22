@@ -11,7 +11,7 @@ const trimSlash = (url) => url.replace(/\/+$/, '');
 
 export const STORE_URL = trimSlash(process.env.STORE_URL || 'http://localhost:5173');
 export const ADMIN_URL = trimSlash(process.env.ADMIN_URL || 'http://localhost:5174');
-// Not used by the smoke tests yet; the full flows (TC-09, TC-10) call the API directly.
+// Base URL without /api/v1. The full flows (TC-09, TC-10) will also call the API directly.
 export const API_URL = trimSlash(process.env.API_URL || 'http://localhost:4000');
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);

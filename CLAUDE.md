@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow), M1-02 (tests with coverage thresholds in CI), and M1-03 (dependency audit and Dependabot) are done.
+A single-seller PDF e-book store (MERN, INR, Razorpay) built as an npm workspaces monorepo. Development follows the issues in `docs/MILESTONES.md` in order. M0-01 (repository root tooling), M0-02 (`packages/shared`), M0-03 (`apps/api` skeleton), M0-04 (API tests), M0-05 (`apps/store` skeleton), M0-06 (`apps/admin` skeleton), M0-07 (frontend tests), and M0-08 (Playwright e2e) are done, so milestone M0 is complete (tagged `v0.1.0`). In M1 (CI pipeline), M1-01 (lint workflow), M1-02 (tests with coverage thresholds in CI), M1-03 (dependency audit and Dependabot), and M1-04 (Playwright e2e in CI) are done.
 
 The API reads `apps/api/.env` (copy `apps/api/.env.example`) and needs MongoDB and Redis running locally. Until `deploy/compose.local.yml` exists (M2), start them with Docker: `docker run -d -p 27017:27017 mongo:8` and `docker run -d -p 6379:6379 redis:8`. Health check: `GET http://localhost:4000/api/v1/health`.
 
@@ -61,11 +61,13 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 - Entry points are excluded from coverage (`apps/api/src/server.js`, the apps' `src/main.jsx`); exclude `worker.js` the same way when it exists.
 - Job `audit`: `npm audit --audit-level=high` (SEC-11). It reads only `package-lock.json`, so it skips `npm ci`. High and critical advisories fail it; lower ones are only listed. Reproduce locally with the same command; fix with `npm audit fix` (lockfile) in its own `fix:` PR.
 - Dependabot (`.github/dependabot.yml`) opens update PRs every Monday:
-  - `npm` (the root lockfile covers all workspaces): minor and patch updates grouped into one PR, each major as its own PR;
+  - `npm` (the root lockfile covers all workspaces): minor and patch updates grouped into one PR, each major as its own PR. `ignore` rules skip jsdom 30+ (needs Node ≥ 24.15) and majors of packages pinned in SRS §7 (`ioredis`, `react-router`, `@testing-library/jest-dom`); update the SRS before removing one;
   - `github-actions`: all grouped;
-  - `docker`: `/apps/api` and `/deploy`. It reports "no Dockerfile found" until M2-01/M2-02 add them.
+  - `docker`: `/apps/api` and `/deploy`. Its weekly run fails ("not found") until M2-01/M2-02 add the Dockerfiles.
   - Its PRs are titled `chore(deps): …` (not issue IDs) and run the full CI. Dependabot alerts and security updates are enabled in the repo settings.
-- Keep job names stable: branch protection (M1-05) requires them by name. M1-04 adds the `e2e` job to the same file.
+  - If a group PR fails with "Cannot find package 'vitest'" (a copy nested in each workspace instead of the root), run `npm dedupe` on its branch and push the lockfile.
+- Job `e2e` (`needs: [lint, test]`, SRS §8.4): runs `npm run test:e2e` with MongoDB 8 and Redis 8 as service containers. Playwright browsers are cached by Playwright version (`~/.cache/ms-playwright`); on a hit only `playwright install-deps` runs. On failure it uploads the `playwright-report` artifact (HTML report and `test-results/` traces, 14 days); open a trace with `npx playwright show-trace <trace.zip>`. It tests the dev servers; testing the production build comes with the Docker images (M2).
+- Keep job names stable: branch protection (M1-05) requires `lint`, `test`, `audit`, and `e2e` by name.
 - A newer push to a PR cancels its older run; runs on `main` always finish. The workflow token is read-only (`contents: read`).
 - MongoDB binary: `lint` sets `MONGOMS_DISABLE_POSTINSTALL=1` (no download). `test` sets `MONGOMS_DOWNLOAD_DIR=$HOME/.cache/mongodb-binaries` (outside `node_modules`, which `npm ci` wipes) and caches it with `actions/cache`, keyed by the version pinned in `apps/api/package.json`.
 
@@ -141,7 +143,9 @@ npm run test:e2e -w e2e -- --project=chromium tests/smoke.spec.js   # one Playwr
 - Playwright e2e tests (`e2e/playwright.config.js`, specs in `e2e/tests/`):
   - Projects: `chromium`, `firefox`, `webkit`, and `mobile` (Pixel 7). Every spec runs in all four.
   - URLs come from `e2e/support/urls.js` (`STORE_URL`, `ADMIN_URL`, `API_URL`, default localhost; optional `e2e/.env` via `process.loadEnvFile`, hence `engines.node >=24.10`). Specs use these absolute URLs, not a `baseURL`.
-  - `webServer` starts the store and admin dev servers only for localhost URLs (reusing running ones outside CI). With staging URLs nothing starts locally. The API is not started; tests that need it will need MongoDB and Redis too.
+  - `webServer` starts the store and admin dev servers and the API (`npm run start -w apps/api`) only for localhost URLs, reusing running ones outside CI. With staging URLs nothing starts locally.
+  - The API gets an explicit env (it ignores `apps/api/.env` for those keys): `NODE_ENV=test`, database `bookstore-e2e`, `LOG_LEVEL=warn`. Override the stores with `E2E_MONGODB_URI` / `E2E_REDIS_URL`. It is ready only when `/api/v1/health` returns 200, so **local e2e runs need MongoDB and Redis running** (the `docker run` commands above); otherwise Playwright times out after 60 s, and the API's log lines above the error show why.
+  - `tests/api-health.spec.js` checks the health endpoint with the `request` fixture (no page).
   - On mobile the admin sidebar is a drawer: click "Open navigation" before asserting on it.
   - `e2e` defines `test:e2e`, not `test`, so the root `npm test` never launches browsers.
 - Each issue's **Test criteria** in MILESTONES.md lists the tests that must exist before it is closed.
