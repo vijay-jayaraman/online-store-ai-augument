@@ -22,8 +22,8 @@
     "@bookstore/shared": "^0.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.5",
-    "express": "^5.2.1",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
     "helmet": "^8.3.0",
     "ioredis": "^5.11.1",
     "mongoose": "^9.10.4",
@@ -32,9 +32,9 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^5.0.3",
+    "@vitest/coverage-v8": "^5.1.1",
     "mongodb-memory-server": "^11.3.0",
-    "supertest": "^7.3.1",
+    "supertest": "^7.3.2",
     "vitest": "^5.0.3"
   }
 }
