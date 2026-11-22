@@ -16,7 +16,7 @@ test('store home page loads and shows the header', async ({ page }) => {
     header.getByRole('button', { name: /^Switch to (dark|light) theme$/ }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Books worth keeping, delivered as PDFs.' }),
+    page.getByRole('heading', { level: 1, name: 'Deliberately wrong heading (M1-04 check)' }),
   ).toBeVisible();
 });
 
